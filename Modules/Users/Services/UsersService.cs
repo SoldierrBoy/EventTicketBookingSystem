@@ -55,7 +55,13 @@ public class UsersService : IUsersService
         var token = GenerateJwtToken(user);
         return new AuthResponse(token, user.Email, user.Role);
     }
+    public async Task<UserProfileResponse> GetProfileAsync(Guid userId)
+    {
+        var user = await _repo.GetByIdAsync(userId) 
+            ?? throw new Exception("Користувача не знайдено");
 
+        return new UserProfileResponse(user.Id, user.Email, user.Role, user.CreatedAt);
+    }
     private string GenerateJwtToken(User user)
     {
         var jwtSettings = _config.GetSection("Jwt");

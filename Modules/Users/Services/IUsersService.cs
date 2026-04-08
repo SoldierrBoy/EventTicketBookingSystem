@@ -6,4 +6,5 @@ public interface IUsersService
 {
     Task<AuthResponse> RegisterAsync(RegisterRequest request);
     Task<AuthResponse> LoginAsync(LoginRequest request);
+    Task<UserProfileResponse> GetProfileAsync(Guid userId);
 }

@@ -1,5 +1,7 @@
+using System.Security.Claims; 
 using EventTicketSystem.Modules.Users.DTOs;
 using EventTicketSystem.Modules.Users.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventTicketSystem.Modules.Users.Controllers;
@@ -23,5 +25,21 @@ public class UsersController : ControllerBase
     {
         var result = await _service.LoginAsync(request);
         return Ok(result);
+    }
+
+    [HttpGet("me")]
+    [Authorize] 
+    public async Task<IActionResult> GetProfile()
+    {
+        var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (!Guid.TryParse(userIdString, out var userId))
+        {
+            return Unauthorized("Невірний токен");
+        }
+
+        var profile = await _service.GetProfileAsync(userId);
+        
+        return Ok(profile);
     }
 }
