@@ -13,6 +13,13 @@ public class UsersService : IUsersService
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
+        var existingUser = await _repo.GetByEmailAsync(request.Email);
+        if (existingUser != null)
+        {
+            
+            throw new InvalidOperationException("User with this email already exists.");
+        }
+
         string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
         var user = new User
