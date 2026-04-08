@@ -1,0 +1,13 @@
+desktop.ini
+.DS_Store
+
+bin/
+obj/
+.vs/
+
+*.user
+*.log
+.vscode/
+*.suo
+*.userosscache
+*.sln.docstates
