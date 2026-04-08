@@ -1,6 +1,11 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using EventTicketSystem.Modules.Users.Models.DTOs; 
 using EventTicketSystem.Modules.Users.Models;
 using EventTicketSystem.Modules.Users.Repositories;
+using Microsoft.Extensions.Configuration; 
+using Microsoft.IdentityModel.Tokens; 
 using BCrypt.Net; 
 
 namespace EventTicketSystem.Modules.Users.Services;
@@ -8,8 +13,13 @@ namespace EventTicketSystem.Modules.Users.Services;
 public class UsersService : IUsersService
 {
     private readonly IUsersRepository _repo;
+    private readonly IConfiguration _config; 
 
-    public UsersService(IUsersRepository repo) => _repo = repo;
+    public UsersService(IUsersRepository repo, IConfiguration config)
+    {
+        _repo = repo;
+        _config = config;
+    }
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
@@ -26,7 +36,8 @@ public class UsersService : IUsersService
 
         await _repo.AddAsync(user);
 
-        return new AuthResponse("jwt-token-placeholder", user.Email, user.Role);
+        var token = GenerateJwtToken(user);
+        return new AuthResponse(token, user.Email, user.Role);
     }
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
@@ -41,6 +52,37 @@ public class UsersService : IUsersService
             throw new Exception("Invalid credentials");
         }
 
-        return new AuthResponse("jwt-token-placeholder", user.Email, user.Role);
+        var token = GenerateJwtToken(user);
+        return new AuthResponse(token, user.Email, user.Role);
+    }
+
+    private string GenerateJwtToken(User user)
+    {
+        var jwtSettings = _config.GetSection("Jwt");
+        var secretKey = jwtSettings["Key"] ?? throw new InvalidOperationException("JWT Key is missing");
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Role, user.Role)
+        };
+
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Expires = DateTime.UtcNow.AddHours(2), 
+            Issuer = jwtSettings["Issuer"],
+            Audience = jwtSettings["Audience"],
+            SigningCredentials = creds
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var securityToken = tokenHandler.CreateToken(tokenDescriptor);
+
+        return tokenHandler.WriteToken(securityToken);
     }
 }
