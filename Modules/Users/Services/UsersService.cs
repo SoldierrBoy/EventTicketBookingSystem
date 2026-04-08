@@ -1,4 +1,4 @@
-using EventTicketSystem.Modules.Users.Models.DTOs; 
+using EventTicketSystem.Modules.Users.DTOs; 
 using EventTicketSystem.Modules.Users.Models;
 using EventTicketSystem.Modules.Users.Repositories;
 using BCrypt.Net; 
