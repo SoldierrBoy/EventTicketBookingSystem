@@ -1,19 +1,19 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using EventTicketSystem.Modules.Users.Models.DTOs; 
+using EventTicketSystem.Modules.Users.DTOs; // Виправлено: прибрали .Models
 using EventTicketSystem.Modules.Users.Models;
 using EventTicketSystem.Modules.Users.Repositories;
-using Microsoft.Extensions.Configuration; 
-using Microsoft.IdentityModel.Tokens; 
-using BCrypt.Net; 
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using BCrypt.Net;
 
 namespace EventTicketSystem.Modules.Users.Services;
 
 public class UsersService : IUsersService
 {
     private readonly IUsersRepository _repo;
-    private readonly IConfiguration _config; 
+    private readonly IConfiguration _config;
 
     public UsersService(IUsersRepository repo, IConfiguration config)
     {
@@ -23,13 +23,20 @@ public class UsersService : IUsersService
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
+        // 1. ПЕРЕВІРКА НА ДУБЛІКАТ (Те, що ми додавали раніше)
+        var existingUser = await _repo.GetByEmailAsync(request.Email);
+        if (existingUser != null)
+        {
+            throw new InvalidOperationException("User with this email already exists.");
+        }
+
         string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
         var user = new User
         {
             Id = Guid.NewGuid(),
             Email = request.Email,
-            PasswordHash = hashedPassword, 
+            PasswordHash = hashedPassword,
             Role = "User",
             CreatedAt = DateTime.UtcNow
         };
@@ -39,29 +46,28 @@ public class UsersService : IUsersService
         var token = GenerateJwtToken(user);
         return new AuthResponse(token, user.Email, user.Role);
     }
+    public async Task<UserProfileResponse> GetProfileAsync(Guid userId)
+    {
+        var user = await _repo.GetByIdAsync(userId)
+            // Використовуємо KeyNotFoundException для статусу 404
+            ?? throw new KeyNotFoundException("Користувача не знайдено");
 
+        return new UserProfileResponse(user.Id, user.Email, user.Role, user.CreatedAt);
+    }
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
     {
-        var user = await _repo.GetByEmailAsync(request.Email)
-            ?? throw new Exception("Invalid credentials");
+        var user = await _repo.GetByEmailAsync(request.Email);
 
-        bool isPasswordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
-
-        if (!isPasswordValid)
+        // 2. ВАРІАНТ ДЛЯ REST API: 401 Unauthorized замість звичайного Exception
+        if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
-            throw new Exception("Invalid credentials");
+            throw new UnauthorizedAccessException("Invalid credentials");
         }
 
         var token = GenerateJwtToken(user);
         return new AuthResponse(token, user.Email, user.Role);
     }
-    public async Task<UserProfileResponse> GetProfileAsync(Guid userId)
-    {
-        var user = await _repo.GetByIdAsync(userId) 
-            ?? throw new Exception("Користувача не знайдено");
 
-        return new UserProfileResponse(user.Id, user.Email, user.Role, user.CreatedAt);
-    }
     private string GenerateJwtToken(User user)
     {
         var jwtSettings = _config.GetSection("Jwt");
@@ -80,7 +86,8 @@ public class UsersService : IUsersService
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddHours(2), 
+            // Можна додати дані з конфігу для Issuer/Audience
+            Expires = DateTime.UtcNow.AddHours(2),
             Issuer = jwtSettings["Issuer"],
             Audience = jwtSettings["Audience"],
             SigningCredentials = creds
