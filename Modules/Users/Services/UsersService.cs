@@ -1,7 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using EventTicketSystem.Modules.Users.DTOs; // Виправлено: прибрали .Models
+using EventTicketSystem.Modules.Users.DTOs;
 using EventTicketSystem.Modules.Users.Models;
 using EventTicketSystem.Modules.Users.Repositories;
 using Microsoft.Extensions.Configuration;
@@ -23,7 +23,6 @@ public class UsersService : IUsersService
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
-        // 1. ПЕРЕВІРКА НА ДУБЛІКАТ (Те, що ми додавали раніше)
         var existingUser = await _repo.GetByEmailAsync(request.Email);
         if (existingUser != null)
         {
@@ -51,7 +50,6 @@ public class UsersService : IUsersService
     {
         var user = await _repo.GetByEmailAsync(request.Email);
 
-        // 2. ВАРІАНТ ДЛЯ REST API: 401 Unauthorized замість звичайного Exception
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
             throw new UnauthorizedAccessException("Invalid credentials");
@@ -79,7 +77,6 @@ public class UsersService : IUsersService
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            // Можна додати дані з конфігу для Issuer/Audience
             Expires = DateTime.UtcNow.AddHours(2),
             Issuer = jwtSettings["Issuer"],
             Audience = jwtSettings["Audience"],
