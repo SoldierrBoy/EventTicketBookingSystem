@@ -1,13 +1,57 @@
-desktop.ini
-.DS_Store
+# Секрети
+.env
 
+# База даних
+infra/postgres/data/
+infra/postgres/dumps/
+
+sql/
+
+# .NET
 bin/
 obj/
+appsettings.Development.json
+desktop.ini
+.DS_Store
+obj/
 .vs/
-
 *.user
 *.log
 .vscode/
 *.suo
 *.userosscache
 *.sln.docstates
+
+# Node.js / Frontend
+node_modules/
+dist/
+build/
+.eslintcache
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Docker
+.docker/
