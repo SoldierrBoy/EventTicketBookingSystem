@@ -12,6 +12,9 @@ using EventTicketSystem.Modules.Tickets.Services;
 using EventTicketSystem.Modules.Users.Repositories;
 using EventTicketSystem.Modules.Users.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
