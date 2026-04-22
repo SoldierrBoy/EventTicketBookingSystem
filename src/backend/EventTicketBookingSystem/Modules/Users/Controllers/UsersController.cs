@@ -28,7 +28,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("me")]
-    [Authorize] 
+    [Authorize]
     public async Task<IActionResult> GetProfile()
     {
         var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -39,7 +39,14 @@ public class UsersController : ControllerBase
         }
 
         var profile = await _service.GetProfileAsync(userId);
-        
+
         return Ok(profile);
+    }
+    
+    [HttpGet("all")]
+    [Authorize(Roles = "Admin")] // Тільки для користувачів з Role = "Admin"
+    public IActionResult GetAllUsers()
+    {
+        return Ok("Тут міг би бути список усіх користувачів, доступний лише адміну.");
     }
 }
