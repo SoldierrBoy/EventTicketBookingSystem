@@ -15,7 +15,7 @@ public class SeatsController : ControllerBase
         Ok(await _service.GetByEventIdAsync(eventId));
 
         // 2. Резервування місця
-    [HttpPost("{seatId:guid}/reserve")]
+    [HttpPost("~/api/seats/{seatId:guid}/reserve")]
     public async Task<IActionResult> Reserve(Guid seatId)
     {
         try
@@ -34,7 +34,7 @@ public class SeatsController : ControllerBase
     }
 
     // 3. Підтвердження оплати
-    [HttpPost("{seatId:guid}/pay")]
+    [HttpPost("~/api/seats/{seatId:guid}/pay")]
     public async Task<IActionResult> MarkAsPaid(Guid seatId)
     {
         try
@@ -49,7 +49,7 @@ public class SeatsController : ControllerBase
     }
 
     // 4. Звільнення місця
-    [HttpPost("{seatId:guid}/release")]
+    [HttpPost("~/api/seats/{seatId:guid}/release")]
     public async Task<IActionResult> Release(Guid seatId)
     {
         try
