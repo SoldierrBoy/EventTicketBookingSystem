@@ -58,7 +58,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
         };
     });
-    
+
+builder.Services.AddMassTransit(x =>
+{
+x.UsingRabbitMq((context, cfg) =>
+{
+    cfg.Host("localhost", "/");
+});
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
