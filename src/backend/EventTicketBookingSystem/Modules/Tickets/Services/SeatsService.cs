@@ -2,7 +2,6 @@ using System.Linq;
 using EventTicketSystem.Modules.Tickets.Models;
 using EventTicketSystem.Modules.Tickets.Repositories;
 using EventTicketSystem.Modules.Tickets.DTOs;
-
 namespace EventTicketSystem.Modules.Tickets.Services;
 
 public class SeatsService : ISeatsService
