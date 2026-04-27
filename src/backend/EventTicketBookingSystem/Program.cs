@@ -12,10 +12,10 @@ using EventTicketSystem.Modules.Tickets.Repositories;
 using EventTicketSystem.Modules.Tickets.Services;
 using EventTicketSystem.Modules.Users.Repositories;
 using EventTicketSystem.Modules.Users.Services;
-using MassTransit; // <-- ВАЖЛИВО: додав цей using
-using Microsoft.AspNetCore.Authentication.JwtBearer; // <-- ВАЖЛИВО: для JWT
+using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens; // <-- ВАЖЛИВО: для TokenValidationParameters
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,7 +71,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => {
-        options.TokenValidationParameters = new TokenValidationParameters {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
@@ -100,7 +101,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication(); 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
