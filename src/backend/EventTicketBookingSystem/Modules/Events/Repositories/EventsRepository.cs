@@ -6,34 +6,42 @@ namespace EventTicketSystem.Modules.Events.Repositories;
 
 public class EventsRepository : IEventsRepository
 {
-    private readonly AppDbContext _db;
-    public EventsRepository(AppDbContext db) => _db = db;
+    private readonly AppDbContext _context;
 
-    public async Task<IEnumerable<Event>> GetAllAsync() =>
-        await _db.Set<Event>().ToListAsync();
+    public EventsRepository(AppDbContext context)
+    {
+        _context = context;
+    }
 
-    public async Task<Event?> GetByIdAsync(Guid id) =>
-        await _db.Set<Event>().FindAsync(id);
+    public async Task<IEnumerable<Event>> GetAllAsync()
+    {
+        return await _context.Events.ToListAsync();
+    }
+
+    public async Task<Event?> GetByIdAsync(Guid id)
+    {
+        return await _context.Events.FindAsync(id);
+    }
 
     public async Task AddAsync(Event ev)
     {
-        _db.Set<Event>().Add(ev);
-        await _db.SaveChangesAsync();
+        await _context.Events.AddAsync(ev);
+        await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(Event ev)
     {
-        _db.Set<Event>().Update(ev);
-        await _db.SaveChangesAsync();
+        _context.Events.Update(ev);
+        await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(Guid id)
     {
         var ev = await GetByIdAsync(id);
-        if (ev is not null)
+        if (ev != null)
         {
-            _db.Set<Event>().Remove(ev);
-            await _db.SaveChangesAsync();
+            _context.Events.Remove(ev);
+            await _context.SaveChangesAsync();
         }
     }
 }
