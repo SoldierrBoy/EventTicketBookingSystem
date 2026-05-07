@@ -8,12 +8,20 @@ namespace EventTicketSystem.Modules.Payments.Controllers;
 public class PaymentsController : ControllerBase
 {
     private readonly IPaymentsService _service;
-    public PaymentsController(IPaymentsService service) => _service = service;
+
+    public PaymentsController(IPaymentsService service)
+    {
+        _service = service;
+    }
 
     [HttpPost("{orderId:guid}/pay")]
     public async Task<IActionResult> Pay(Guid orderId)
     {
-        var success = await _service.ProcessAsync(orderId);
-        return success ? Ok(new { status = "Paid" }) : BadRequest(new { status = "Failed" });
+        var result = await _service.ProcessAsync(orderId);
+        if (!result)
+        {
+            return BadRequest(new { message = "Не вдалося обробити платіж. Перевірте статус замовлення." });
+        }
+        return Ok(new { message = "Оплата успішна" });
     }
 }

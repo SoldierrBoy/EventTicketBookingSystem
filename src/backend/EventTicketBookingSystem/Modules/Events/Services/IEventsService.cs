@@ -1,12 +1,12 @@
-using EventTicketSystem.Modules.Events.Models;
+using EventTicketSystem.Modules.Events.DTOs;
 
 namespace EventTicketSystem.Modules.Events.Services;
 
 public interface IEventsService
 {
-    Task<IEnumerable<Event>> GetAllAsync();
-    Task<Event?> GetByIdAsync(Guid id);
-    Task<Event> CreateAsync(Event ev);
-    Task UpdateAsync(Event ev);
-    Task DeleteAsync(Guid id);
+    Task<IEnumerable<EventListItemDto>> GetEventsListAsync();
+    Task<EventDetailDto?> GetEventDetailAsync(Guid id);
+    Task CreateEventAsync(CreateEventDto dto);
+    Task UpdateEventAsync(Guid id, CreateEventDto dto);
+    Task DeleteEventAsync(Guid id);
 }

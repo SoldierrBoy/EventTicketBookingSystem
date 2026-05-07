@@ -1,11 +1,9 @@
-namespace EventTicketSystem.Modules.Events.Models;
+namespace EventTicketSystem.Modules.Events.DTOs;
 
-public class Event
+public class CreateEventDto
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
     public string Title { get; set; } = string.Empty;
     public string Type { get; set; } = string.Empty;
     public string Venue { get; set; } = string.Empty;
     public DateTime StartsAt { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
