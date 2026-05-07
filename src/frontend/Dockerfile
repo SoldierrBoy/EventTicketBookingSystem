@@ -14,4 +14,4 @@ FROM nginx:stable-alpine
 # Vite за замовчуванням збирає проект у папку dist
 COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"] fix dependencies
+CMD ["nginx", "-g", "daemon off;"]
