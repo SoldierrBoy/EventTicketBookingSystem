@@ -21,6 +21,11 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     container_name: dotnet_rabbitmq
     restart: always
     ports:
@@ -39,12 +44,16 @@ services:
       dockerfile: Dockerfile
     container_name: dotnet_api
     depends_on:
-      - db
-      - rabbitmq
+          db:
+            condition: service_started
+          rabbitmq:
+            condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=db;Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}
       - RabbitMQ__Host=rabbitmq
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
     ports:
       - "${BACKEND_PORT}:8080"
     networks:

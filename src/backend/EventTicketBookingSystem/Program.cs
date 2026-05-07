@@ -51,12 +51,17 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 // -- MassTransit (RabbitMQ) --
 builder.Services.AddMassTransit(x =>
 {
+
     // Реєструємо консюмерів тут
     x.AddConsumer<PaymentConfirmedConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", "/");
+        cfg.Host("dotnet_rabbitmq", "/", h =>
+        {
+            h.Username(Environment.GetEnvironmentVariable("RABBITMQ_USER"));
+            h.Password(Environment.GetEnvironmentVariable("RABBITMQ_PASS"));
+        });
 
         // Налаштовуємо отримання повідомлень
         cfg.ReceiveEndpoint("payment-confirmed-queue", e =>
