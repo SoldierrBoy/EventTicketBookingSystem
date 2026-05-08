@@ -8,8 +8,8 @@ RUN dotnet restore
 
 # Копіюємо весь вміст папки проекту в робочу директорію
 COPY EventTicketBookingSystem/ ./
-RUN dotnet publish -c Release -o out
 
+RUN dotnet publish EventTicketSystem.csproj -c Release -o out
 # Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
