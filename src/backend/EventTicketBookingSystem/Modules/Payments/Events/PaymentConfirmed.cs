@@ -1,4 +1,4 @@
 namespace EventTicketSystem.Modules.Payments.Events;
 
-// Це і є та сама подія payment.confirmed
-public record PaymentConfirmed(Guid OrderId, DateTime ConfirmedAt);
+// record автоматично створить властивості OrderId та CreatedAt
+public record PaymentConfirmed(Guid OrderId, DateTime CreatedAt);
