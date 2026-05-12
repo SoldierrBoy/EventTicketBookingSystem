@@ -35,7 +35,7 @@ public class EventsController : ControllerBase
 
     // feature/events-admin: Створення нової події
     [HttpPost]
-    // [Authorize(Roles = "Admin")] // Тимчасово вимкнено для тестів
+    
     public async Task<IActionResult> Create(CreateEventDto dto)
     {
         await _eventsService.CreateEventAsync(dto);
@@ -44,7 +44,7 @@ public class EventsController : ControllerBase
 
     // feature/events-admin: Оновлення існуючої події
     [HttpPut("{id}")]
-    // [Authorize(Roles = "Admin")] // Тимчасово вимкнено для тестів
+    
     public async Task<IActionResult> Update(Guid id, CreateEventDto dto)
     {
         await _eventsService.UpdateEventAsync(id, dto);
@@ -53,7 +53,7 @@ public class EventsController : ControllerBase
 
     // feature/events-admin: Видалення події
     [HttpDelete("{id}")]
-    // [Authorize(Roles = "Admin")] // Тимчасово вимкнено для тестів
+    
     public async Task<IActionResult> Delete(Guid id)
     {
         await _eventsService.DeleteEventAsync(id);

@@ -16,6 +16,8 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using EventTicketSystem.Modules.Locations.Services;
+using EventTicketSystem.Modules.Locations.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,10 +45,13 @@ builder.Services.AddScoped<IOrdersService, OrdersService>();
 builder.Services.AddScoped<IPaymentsService, PaymentsService>();
 builder.Services.AddScoped<IPaymentsRepository, PaymentsRepository>();
 
+// моя зміна
+builder.Services.AddScoped<ILocationsService, LocationsService>();
+// Тимчасово реєструємо мок, щоб проєкт запустився
+builder.Services.AddSingleton<ILocationsRepository, MockLocationsRepository>();
+
 // -- Notifications module --
 builder.Services.AddScoped<IEmailService, EmailService>();
-// Примітка: AddHostedService<PaymentConfirmedConsumer> можна прибрати, 
-// бо MassTransit сам керує життєвим циклом консюмерів через cfg.ReceiveEndpoint.
 
 // -- MassTransit (RabbitMQ) --
 builder.Services.AddMassTransit(x =>
@@ -68,8 +73,6 @@ builder.Services.AddMassTransit(x =>
 
 // -- API & Auth --
 builder.Services.AddControllers();
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => {
