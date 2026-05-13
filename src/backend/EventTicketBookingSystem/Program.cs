@@ -45,10 +45,9 @@ builder.Services.AddScoped<IOrdersService, OrdersService>();
 builder.Services.AddScoped<IPaymentsService, PaymentsService>();
 builder.Services.AddScoped<IPaymentsRepository, PaymentsRepository>();
 
-// моя зміна
+// -- Locations module --
 builder.Services.AddScoped<ILocationsService, LocationsService>();
-// Тимчасово реєструємо мок, щоб проєкт запустився
-builder.Services.AddSingleton<ILocationsRepository, MockLocationsRepository>();
+builder.Services.AddScoped<ILocationsRepository, LocationsRepository>(); // Змінили на Scoped і реальний клас
 
 // -- Notifications module --
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -110,5 +109,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+// -- Автоматичне застосування міграцій при старті --
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
 
 app.Run();
