@@ -55,19 +55,28 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 // -- MassTransit (RabbitMQ) --
 builder.Services.AddMassTransit(x =>
 {
+
     // Реєструємо консюмерів тут
     x.AddConsumer<PaymentConfirmedConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
-    {
-        cfg.Host("localhost", "/");
+{
+    // 1. Отримуємо хост із конфігурації (у Docker це буде "dotnet_rabbitmq", локально — "localhost")
+    var rabbitHost = builder.Configuration["RabbitMq:Host"] ?? "localhost";
 
-        // Налаштовуємо отримання повідомлень
-        cfg.ReceiveEndpoint("payment-confirmed-queue", e =>
-        {
-            e.ConfigureConsumer<PaymentConfirmedConsumer>(context);
-        });
+    cfg.Host(rabbitHost, "/", h =>
+    {
+        // 2. Беремо кредеснціали із змінних оточення (як зробив Богдан)
+        h.Username(Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "guest");
+        h.Password(Environment.GetEnvironmentVariable("RABBITMQ_PASS") ?? "guest");
     });
+
+    // Налаштовуємо отримання повідомлень (це лишаємо як було)
+    cfg.ReceiveEndpoint("payment-confirmed-queue", e =>
+    {
+        e.ConfigureConsumer<PaymentConfirmedConsumer>(context);
+    });
+});
 });
 
 // -- API & Auth --
@@ -95,7 +104,13 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
-
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<EventTicketSystem.Infrastructure.Data.AppDbContext>();
+    // Ця команда автоматично створює всі таблиці в базі при запуску
+    dbContext.Database.Migrate();
+}
+//
 // -- Middleware --
 if (app.Environment.IsDevelopment())
 {

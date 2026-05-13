@@ -1,26 +1,37 @@
+using EventTicketSystem.Modules.Notifications.Services;
 using EventTicketSystem.Modules.Payments.Events;
+using EventTicketSystem.Modules.Orders.Repositories; 
+using EventTicketSystem.Modules.Users.Repositories; 
 using MassTransit;
-using Microsoft.Extensions.Logging;
 
 namespace EventTicketSystem.Modules.Notifications.Consumers;
 
 public class PaymentConfirmedConsumer : IConsumer<PaymentConfirmed>
 {
-    private readonly ILogger<PaymentConfirmedConsumer> _logger;
+    private readonly IEmailService _emailService;
+    private readonly IOrdersRepository _ordersRepo;
+    private readonly IUsersRepository _usersRepo;
 
-    public PaymentConfirmedConsumer(ILogger<PaymentConfirmedConsumer> logger)
+    public PaymentConfirmedConsumer(
+        IEmailService emailService,
+        IOrdersRepository ordersRepo,
+        IUsersRepository usersRepo)
     {
-        _logger = logger;
+        _emailService = emailService;
+        _ordersRepo = ordersRepo;
+        _usersRepo = usersRepo;
     }
 
-    public Task Consume(ConsumeContext<PaymentConfirmed> context)
+    public async Task Consume(ConsumeContext<PaymentConfirmed> context)
     {
-        var message = context.Message;
+        var orderId = context.Message.OrderId;
 
-        _logger.LogInformation($"[RabbitMQ] Отримано підтвердження оплати! Замовлення: {message.OrderId}");
+        var order = await _ordersRepo.GetByIdAsync(orderId);
+        if (order == null) return; 
 
-        // TODO: Пізніше тут можна викликати IEmailService для відправки листа з квитком
+        var user = await _usersRepo.GetByIdAsync(order.UserId);
+        if (user == null) return; 
 
-        return Task.CompletedTask;
+        await _emailService.SendBookingConfirmationAsync(user.Email, orderId);
     }
 }
