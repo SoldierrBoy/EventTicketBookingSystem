@@ -20,5 +20,5 @@ public class AppDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<Payment> Payments { get; set; }
-    public DbSet<Seat> Seats { get; set; }
+    public DbSet<EventTicketSystem.Modules.Locations.Models.Seat> Seats { get; set; }
 }
