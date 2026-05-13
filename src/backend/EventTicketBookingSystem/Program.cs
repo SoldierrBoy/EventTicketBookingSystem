@@ -16,6 +16,8 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using EventTicketSystem.Modules.Locations.Services;
+using EventTicketSystem.Modules.Locations.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,10 +45,12 @@ builder.Services.AddScoped<IOrdersService, OrdersService>();
 builder.Services.AddScoped<IPaymentsService, PaymentsService>();
 builder.Services.AddScoped<IPaymentsRepository, PaymentsRepository>();
 
+// -- Locations module --
+builder.Services.AddScoped<ILocationsService, LocationsService>();
+builder.Services.AddScoped<ILocationsRepository, LocationsRepository>(); // Змінили на Scoped і реальний клас
+
 // -- Notifications module --
 builder.Services.AddScoped<IEmailService, EmailService>();
-// Примітка: AddHostedService<PaymentConfirmedConsumer> можна прибрати, 
-// бо MassTransit сам керує життєвим циклом консюмерів через cfg.ReceiveEndpoint.
 
 // -- MassTransit (RabbitMQ) --
 builder.Services.AddMassTransit(x =>
@@ -77,8 +81,6 @@ builder.Services.AddMassTransit(x =>
 
 // -- API & Auth --
 builder.Services.AddControllers();
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => {
@@ -122,5 +124,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+// -- Автоматичне застосування міграцій при старті --
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
 
 app.Run();
