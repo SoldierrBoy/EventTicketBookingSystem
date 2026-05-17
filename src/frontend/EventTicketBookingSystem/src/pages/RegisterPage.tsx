@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { registerUser } from "../api/auth";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function RegisterPage() {
+  const navigate = useNavigate(); // Додаємо ініціалізацію хука навігації
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -13,7 +15,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await registerUser(email, password);
-      window.location.href = "/";
+      navigate("/"); // Замінили window.location.href на плавний React-перехід
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Помилка");
     } finally {
@@ -48,7 +50,8 @@ export default function RegisterPage() {
           </button>
         </form>
         <p style={styles.link}>
-          Вже є акаунт? <a href="/login">Увійти</a>
+          {/* Замінили <a> на <Link> */}
+          Вже є акаунт? <Link to="/login">Увійти</Link>
         </p>
       </div>
     </div>

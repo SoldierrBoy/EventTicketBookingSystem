@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { loginUser } from "../api/auth";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function LoginPage() {
+  const navigate = useNavigate(); // Додаємо ініціалізацію хука навігації
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -13,7 +15,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await loginUser(email, password);
-      window.location.href = "/";
+      navigate("/"); // Замінили window.location.href на плавний React-перехід
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Помилка");
     } finally {
@@ -48,7 +50,8 @@ export default function LoginPage() {
           </button>
         </form>
         <p style={styles.link}>
-          Немає акаунту? <a href="/register">Зареєструватись</a>
+          {/* Замінили <a> на <Link> */}
+          Немає акаунту? <Link to="/register">Зареєструватись</Link>
         </p>
       </div>
     </div>
