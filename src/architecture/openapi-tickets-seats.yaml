@@ -1,0 +1,178 @@
+openapi: 3.0.3
+info:
+  title: Tickets & Seats API
+  description: API for managing event seats — part of Event Ticket Booking System
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:5000
+    description: Local development
+
+tags:
+  - name: Seats
+    description: Seat availability and status management
+
+paths:
+  /api/events/{eventId}/seats:
+    get:
+      tags: [Seats]
+      summary: Get all seats for an event
+      description: Returns the full seat map with statuses for a given event.
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: "a1b2c3d4-0000-0000-0000-000000000001"
+      responses:
+        "200":
+          description: List of seats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SeatResponse"
+        "404":
+          description: Event not found
+
+  /api/seats/{seatId}/reserve:
+    post:
+      tags: [Seats]
+      summary: Reserve a seat
+      description: |
+        Transitions seat status from **Available → Reserved**.
+        Returns 400 if the seat is already Reserved or Paid.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: seatId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: "b1c2d3e4-0000-0000-0000-000000000002"
+      responses:
+        "200":
+          description: Seat reserved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+              example:
+                message: "Місце успішно зарезервовано"
+        "400":
+          description: Seat is not available
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+              example:
+                message: "Неможливо зарезервувати: місце вже має статус Reserved"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Seat not found
+
+  /api/seats/{seatId}/pay:
+    post:
+      tags: [Seats]
+      summary: Mark seat as paid
+      description: |
+        Transitions seat status to **Paid**.
+        Called internally after successful payment processing.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: seatId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Seat marked as paid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+              example:
+                message: "Місце позначено як оплачене"
+        "400":
+          description: Seat is already paid
+        "401":
+          description: Unauthorized
+        "404":
+          description: Seat not found
+
+  /api/seats/{seatId}/release:
+    post:
+      tags: [Seats]
+      summary: Release a seat
+      description: |
+        Transitions seat status back to **Available**.
+        Cannot release a seat that is already **Paid**.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: seatId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Seat released
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+              example:
+                message: "Місце звільнено"
+        "400":
+          description: Cannot release a paid seat
+        "401":
+          description: Unauthorized
+        "404":
+          description: Seat not found
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    SeatResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "b1c2d3e4-0000-0000-0000-000000000002"
+        eventId:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-0000-0000-0000-000000000001"
+        row:
+          type: string
+          example: "A"
+        number:
+          type: integer
+          example: 12
+        status:
+          type: string
+          enum: [Available, Reserved, Paid]
+          example: "Available"
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string

@@ -1,0 +1,64 @@
+asyncapi: 2.6.0
+info:
+  title: Tickets & Seats Async API
+  version: 1.0.0
+  description: |
+    Async events consumed by the Tickets & Seats module.
+    The module listens for `payment.confirmed` events published by the Orders/Payments module
+    and transitions the seat status to **Paid**.
+
+servers:
+  rabbitmq:
+    url: amqp://localhost:5672
+    protocol: amqp
+    description: RabbitMQ message broker
+
+channels:
+  payment.confirmed:
+    description: |
+      Published when a payment is successfully processed.
+      The Tickets & Seats module consumes this event to mark
+      the corresponding seat(s) as Paid.
+    subscribe:
+      operationId: onPaymentConfirmed
+      summary: Consume payment confirmation
+      message:
+        $ref: "#/components/messages/PaymentConfirmed"
+
+components:
+  messages:
+    PaymentConfirmed:
+      name: PaymentConfirmed
+      title: Payment confirmed event
+      summary: Fires when an order payment succeeds
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/PaymentConfirmedPayload"
+      examples:
+        - name: Example
+          payload:
+            orderId: "c1d2e3f4-0000-0000-0000-000000000003"
+            seatIds:
+              - "b1c2d3e4-0000-0000-0000-000000000002"
+              - "b1c2d3e4-0000-0000-0000-000000000005"
+            paidAt: "2026-05-17T14:30:00Z"
+
+  schemas:
+    PaymentConfirmedPayload:
+      type: object
+      required: [orderId, seatIds, paidAt]
+      properties:
+        orderId:
+          type: string
+          format: uuid
+          description: ID of the confirmed order
+        seatIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: List of seat IDs to mark as Paid
+        paidAt:
+          type: string
+          format: date-time
+          description: Timestamp of payment confirmation
