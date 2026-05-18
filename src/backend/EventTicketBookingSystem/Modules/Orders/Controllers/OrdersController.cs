@@ -1,10 +1,13 @@
 using EventTicketSystem.Modules.Orders.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace EventTicketSystem.Modules.Orders.Controllers;
 
 [ApiController]
 [Route("api/orders")]
+[Authorize]
 public class OrdersController : ControllerBase
 {
     private readonly IOrdersService _service;
@@ -13,26 +16,37 @@ public class OrdersController : ControllerBase
     [HttpGet("my")]
     public async Task<IActionResult> GetMy()
     {
-        // TODO: get userId from JWT claims
-        var userId = Guid.Empty;
+        var userId = GetUserId();
         return Ok(await _service.GetMyOrdersAsync(userId));
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateOrderRequest req)
     {
-        // TODO: get userId from JWT claims
-        var userId = Guid.Empty;
-        var order = await _service.CreateAsync(userId, req.EventId, req.SeatId);
-        return CreatedAtAction(null, new { id = order.Id }, order);
+        var userId = GetUserId();
+        try
+        {
+            var order = await _service.CreateAsync(userId, req.EventId, req.SeatId);
+            return CreatedAtAction(nameof(GetMy), new { id = order.Id }, order);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Cancel(Guid id)
     {
-        var userId = Guid.Empty;
+        var userId = GetUserId();
         await _service.CancelAsync(id, userId);
         return NoContent();
+    }
+
+    private Guid GetUserId()
+    {
+        var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return Guid.TryParse(idClaim, out var id) ? id : Guid.Empty;
     }
 }
 
