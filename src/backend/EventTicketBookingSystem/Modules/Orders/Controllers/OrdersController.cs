@@ -17,7 +17,11 @@ public class OrdersController : ControllerBase
     public async Task<IActionResult> GetMy()
     {
         var userId = GetUserId();
-        return Ok(await _service.GetMyOrdersAsync(userId));
+        if (userId == Guid.Empty)
+            return Unauthorized(new { message = "Невалідний токен: неможливо визначити ID користувача." });
+        var orders = await _service.GetMyOrdersAsync(userId);
+        
+        return Ok(orders);
     }
 
     [HttpPost]
@@ -39,8 +43,19 @@ public class OrdersController : ControllerBase
     public async Task<IActionResult> Cancel(Guid id)
     {
         var userId = GetUserId();
-        await _service.CancelAsync(id, userId);
-        return NoContent();
+        
+        if (userId == Guid.Empty)
+            return Unauthorized(new { message = "Невалідний токен: неможливо визначити ID користувача." });
+
+        try
+        {
+            await _service.CancelAsync(id, userId);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     private Guid GetUserId()
