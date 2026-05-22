@@ -52,6 +52,7 @@ export default function EventsPage() {
                       minute: "2-digit",
                     })}
                   </p>
+                  <p style={styles.description}>{event.description}</p>
                 </div>
                 <div style={styles.cardFooter}>
                   <Link to={`/events/${event.id}`} style={styles.btn}>
@@ -121,6 +122,7 @@ const styles: Record<string, React.CSSProperties> = {
     color: "#1a1a1a",
   },
   date: { fontSize: "0.875rem", color: "#666", margin: 0 },
+  description: { fontSize: "0.95rem", color: "#4b5563", marginTop: "0.85rem", lineHeight: 1.5 },
   btn: {
     padding: "0.5rem 1.25rem",
     borderRadius: "8px",

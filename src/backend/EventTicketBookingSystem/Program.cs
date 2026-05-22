@@ -82,6 +82,18 @@ builder.Services.AddMassTransit(x =>
 // -- API & Auth --
 builder.Services.AddControllers();
 
+// -- CORS for local development --
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DevCors", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -119,6 +131,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("DevCors");
 
 app.UseAuthentication();
 app.UseAuthorization();
