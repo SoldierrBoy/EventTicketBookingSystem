@@ -1,0 +1,22 @@
+asyncapi: 2.6.0
+info:
+  title: Locations Async API
+  version: 1.0.0
+  description: |
+    Asynchronous messaging contract for the Locations module.
+
+    In the current implementation, the Locations module does not publish or consume RabbitMQ
+    messages. Location and seat-layout changes are handled synchronously through HTTP
+    endpoints in `LocationsController`.
+
+servers:
+  rabbitmq:
+    url: amqp://localhost:5672
+    protocol: amqp
+    description: RabbitMQ message broker used by other modules in the system
+
+channels: {}
+
+components:
+  messages: {}
+  schemas: {}
