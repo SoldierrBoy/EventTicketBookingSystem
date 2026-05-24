@@ -1,4 +1,5 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5273";
+const _RAW_BASE = import.meta.env.VITE_API_URL || "http://localhost:5273";
+const BASE_URL = String(_RAW_BASE).replace(/\/+$/, "");
 
 export interface AuthResponse {
   token: string;
